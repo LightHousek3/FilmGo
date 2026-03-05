@@ -5,9 +5,11 @@ const { authValidator } = require('../../src/validators');
 
 const router = express.Router();
 
+// ─── Registration & Email Verification ───────────────────────────────────────
+
 /**
  * @route   POST /api/v1/auth/register
- * @desc    Register new user
+ * @desc    Register new user (account INACTIVE until email verified)
  * @access  Public
  */
 router.post(
@@ -18,8 +20,33 @@ router.post(
 );
 
 /**
+ * @route   GET /api/v1/auth/verify-email?token=xxx
+ * @desc    Verify email using token from verification link
+ * @access  Public
+ */
+router.get(
+    '/verify-email',
+    validate(authValidator.verifyEmail),
+    authController.verifyEmail
+);
+
+/**
+ * @route   POST /api/v1/auth/resend-verification
+ * @desc    Resend email verification link
+ * @access  Public
+ */
+router.post(
+    '/resend-verification',
+    authLimiter,
+    validate(authValidator.resendVerificationEmail),
+    authController.resendVerificationEmail
+);
+
+// ─── Authentication ───────────────────────────────────────────────────────────
+
+/**
  * @route   POST /api/v1/auth/login
- * @desc    Login user
+ * @desc    Login user (only ACTIVE accounts)
  * @access  Public
  */
 router.post(
@@ -62,4 +89,42 @@ router.get(
     authController.getMe
 );
 
+// ─── Forgot / Reset Password ──────────────────────────────────────────────────
+
+/**
+ * @route   POST /api/v1/auth/forgot-password
+ * @desc    Send password reset link to user email
+ * @access  Public
+ */
+router.post(
+    '/forgot-password',
+    authLimiter,
+    validate(authValidator.forgotPassword),
+    authController.forgotPassword
+);
+
+/**
+ * @route   POST /api/v1/auth/reset-password?token=xxx
+ * @desc    Reset password using token from email link
+ * @access  Public
+ */
+router.post(
+    '/reset-password',
+    validate(authValidator.resetPassword),
+    authController.resetPassword
+);
+
+/**
+ * @route   POST /api/v1/auth/resend-forgot-password
+ * @desc    Resend password reset email
+ * @access  Public
+ */
+router.post(
+    '/resend-forgot-password',
+    authLimiter,
+    validate(authValidator.resendForgotPassword),
+    authController.resendForgotPassword
+);
+
 module.exports = router;
+

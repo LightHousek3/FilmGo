@@ -29,7 +29,7 @@ const userSchema = new mongoose.Schema(
         password: {
             type: String,
             required: true,
-            minlength: 8,
+            minlength: 6,
             private: true, // excluded from toJSON
         },
         avatar: {
@@ -50,6 +50,17 @@ const userSchema = new mongoose.Schema(
         },
         emailVerificationExpires: {
             type: Date,
+            private: true,
+            default: null,
+        },
+        passwordResetToken: {
+            type: String,
+            private: true,
+            default: null,
+        },
+        passwordResetExpires: {
+            type: Date,
+            private: true,
             default: null,
         },
         status: {
@@ -71,7 +82,6 @@ const userSchema = new mongoose.Schema(
 );
 
 // ─── Indexes ─────────────────────────────────────────────
-userSchema.index({ email: 1 });
 userSchema.index({ status: 1, role: 1 });
 
 // ─── Plugins ─────────────────────────────────────────────

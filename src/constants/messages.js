@@ -6,19 +6,25 @@ const messages = {
     AUTH: {
         LOGIN_SUCCESS: 'Login successful',
         LOGOUT_SUCCESS: 'Logout successful',
-        REGISTER_SUCCESS: 'Registration successful. Please verify your email.',
+        REGISTER_SUCCESS: 'Registration successful. Please check your email to verify your account.',
         TOKEN_REFRESHED: 'Token refreshed successfully',
         INVALID_CREDENTIALS: 'Invalid email or password',
         UNAUTHORIZED: 'Please authenticate',
         FORBIDDEN: 'You do not have permission to perform this action',
         EMAIL_ALREADY_EXISTS: 'Email already registered',
-        EMAIL_NOT_VERIFIED: 'Please verify your email first',
+        EMAIL_NOT_VERIFIED: 'Please verify your email to activate your account',
         INVALID_REFRESH_TOKEN: 'Invalid or expired refresh token',
-        ACCOUNT_BLOCKED: 'Your account has been blocked',
-        ACCOUNT_INACTIVE: 'Your account is inactive',
-        VERIFICATION_EMAIL_SENT: 'Verification email sent',
-        EMAIL_VERIFIED: 'Email verified successfully',
+        ACCOUNT_BLOCKED: 'Your account has been blocked. Please contact support.',
+        ACCOUNT_INACTIVE: 'Your account is not active. Please verify your email first.',
+        VERIFICATION_EMAIL_SENT: 'Verification email sent. Please check your inbox.',
+        EMAIL_VERIFIED: 'Email verified successfully. Your account is now active!',
         INVALID_VERIFICATION_TOKEN: 'Invalid or expired verification token',
+        FORGOT_PASSWORD_SENT: 'Password reset instructions have been sent to your email.',
+        RESET_PASSWORD_SUCCESS: 'Password has been reset successfully.',
+        INVALID_RESET_TOKEN: 'Invalid or expired password reset token',
+        RESEND_VERIFICATION_SENT: 'Verification email resent successfully.',
+        ALREADY_VERIFIED: 'This email has already been verified.',
+        RESEND_TOO_SOON: 'Please wait before requesting another email.',
     },
 
     // Generic CRUD
@@ -60,6 +66,13 @@ const messages = {
         SUCCESS: 'Payment completed successfully',
         FAILED: 'Payment failed',
         PENDING: 'Payment is pending',
+    },
+
+    // Theater
+    THEATER: {
+        GEOCODE_SUCCESS: 'Theater coordinates updated successfully',
+        GEOCODE_NOT_FOUND: 'Could not determine coordinates for the provided address. Please try a more specific address.',
+        GEOCODE_SERVICE_ERROR: 'Geocoding service is temporarily unavailable. Please try again later.',
     },
 };
 

@@ -52,7 +52,13 @@ const config = {
                 pass: process.env.SMTP_PASS,
             },
         },
-        from: process.env.EMAIL_FROM || 'noreply@moviebooking.com',
+        from: process.env.EMAIL_FROM || 'noreply@filmgo.vn',
+        verificationExpiresHours: parseInt(process.env.EMAIL_VERIFICATION_EXPIRES_HOURS, 10) || 24,
+        resetPasswordExpiresMinutes: parseInt(process.env.RESET_PASSWORD_EXPIRES_MINUTES, 10) || 60,
+    },
+
+    app: {
+        frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000/api/v1/auth',
     },
 }
 
