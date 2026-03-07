@@ -1,9 +1,14 @@
 const authService = require('./auth.service');
 const genreService = require('./genre.service');
-const promotionService = require('./promotion.service')
+const promotionService = require('./promotion.service');
+const movieService = require('./movie.service');
+const showtimeService = require('./showtime.service');
+
 
 module.exports = {
-  authService,
-  genreService,
-  promotionService,
+    authService,
+    genreService,
+    promotionService,
+    movieService,
+    showtimeService,
 };
