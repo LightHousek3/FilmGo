@@ -1,11 +1,12 @@
-const authService = require('./auth.service');
-const genreService = require('./genre.service');
-const emailService = require('./email.service');
-const theaterService = require('./theater.service');
-const geocodeService = require('./geocode.service');
-const promotionService = require('./promotion.service');
-const movieService = require('./movie.service');
-const showtimeService = require('./showtime.service');
+const authService = require("./auth.service");
+const genreService = require("./genre.service");
+const emailService = require("./email.service");
+const theaterService = require("./theater.service");
+const geocodeService = require("./geocode.service");
+const promotionService = require("./promotion.service");
+const movieService = require("./movie.service");
+const showtimeService = require("./showtime.service");
+const ticketPriceService = require("./ticketPrice.service");
 const seatService = require('./seat.service');
 
 module.exports = {
@@ -18,4 +19,5 @@ module.exports = {
   movieService,
   showtimeService,
   seatService,
+  ticketPriceService,
 };

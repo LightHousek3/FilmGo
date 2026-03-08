@@ -9,12 +9,12 @@ const Promotion = require("./promotion.model");
 const Payment = require("./payment.model");
 const Seat = require("./seat.model");
 const BookingSeat = require("./bookingseat.model");
+const TicketPrice = require("./ticketPrice.model");
 
 module.exports = {
   User,
   RefreshToken,
   Genre,
-  Theater,
   Promotion,
   Movie,
   Showtime,
@@ -22,4 +22,6 @@ module.exports = {
   Payment,
   Seat,
   BookingSeat,
+  Theater,
+  TicketPrice,
 };
