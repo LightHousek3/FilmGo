@@ -6,7 +6,7 @@ const geocodeService = require('./geocode.service');
 const promotionService = require('./promotion.service');
 const movieService = require('./movie.service');
 const showtimeService = require('./showtime.service');
-
+const seatService = require('./seat.service');
 
 module.exports = {
   authService,
@@ -17,4 +17,5 @@ module.exports = {
   promotionService,
   movieService,
   showtimeService,
+  seatService,
 };
