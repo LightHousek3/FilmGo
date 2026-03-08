@@ -5,8 +5,8 @@ const Movie = require("./movie.model");
 const Showtime = require("./showtime.model");
 const Screen = require("./screen.model");
 const Theater = require("./theater.model");
-const Theater = require('./theater.model');
-const Promotion = require('./promotion.model');
+const Promotion = require("./promotion.model");
+const TicketPrice = require("./ticketPrice.model");
 
 module.exports = {
   User,
@@ -18,4 +18,5 @@ module.exports = {
   Showtime,
   Screen,
   Theater,
+  TicketPrice,
 };

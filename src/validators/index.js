@@ -1,9 +1,10 @@
 const authValidator = require("./auth.validator");
-const theaterValidator = require('./theater.validator');
+const theaterValidator = require("./theater.validator");
 const customValidator = require("./custom.validator");
-const promotionValidator = require('./promotion.validator');
+const promotionValidator = require("./promotion.validator");
 const movieValidator = require("./movie.validator");
 const showtimeValidator = require("./showtime.validator");
+const ticketPriceValidator = require("./ticketPrice.validator");
 
 module.exports = {
   authValidator,
@@ -12,4 +13,5 @@ module.exports = {
   promotionValidator,
   movieValidator,
   showtimeValidator,
+  ticketPriceValidator,
 };

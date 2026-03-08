@@ -1,17 +1,22 @@
-const express = require('express');
-const helmet = require('helmet');
-const cors = require('cors');
-const morgan = require('morgan');
-const compression = require('compression');
-const cookieParser = require('cookie-parser');
-const mongoSanitize = require('express-mongo-sanitize');
-const hpp = require('hpp');
+const express = require("express");
+const helmet = require("helmet");
+const cors = require("cors");
+const morgan = require("morgan");
+const compression = require("compression");
+const cookieParser = require("cookie-parser");
+const mongoSanitize = require("express-mongo-sanitize");
+const hpp = require("hpp");
 
-const config = require('./config');
-const corsOptions = require('./config/cors');
-const logger = require('./config/logger');
-const { apiLimiter, errorConverter, errorHandler, notFoundHandler } = require('./middlewares');
-const routesV1 = require('./routes');
+const config = require("./config");
+const corsOptions = require("./config/cors");
+const logger = require("./config/logger");
+const {
+  apiLimiter,
+  errorConverter,
+  errorHandler,
+  notFoundHandler,
+} = require("./middlewares");
+const routesV1 = require("./routes");
 
 const app = express();
 
@@ -20,16 +25,16 @@ const app = express();
 // ═══════════════════════════════════════════════
 
 // Set security HTTP headers
-app.set('trust proxy', 1);
+app.set("trust proxy", 1);
 app.use(helmet());
 
 // CORS
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 // Rate limiting
-if (config.env === 'production') {
-    app.use('/api', apiLimiter);
+if (config.env === "production") {
+  app.use("/api", apiLimiter);
 }
 
 // ═══════════════════════════════════════════════
@@ -37,10 +42,10 @@ if (config.env === 'production') {
 // ═══════════════════════════════════════════════
 
 // Parse JSON body (limit payload size)
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: "10mb" }));
 
 // Parse URL-encoded bodies
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Parse cookies
 app.use(cookieParser());
@@ -58,25 +63,25 @@ app.use(compression());
 // Logging
 // ═══════════════════════════════════════════════
 
-if (config.env !== 'test') {
-    app.use(
-        morgan('combined', {
-            stream: { write: (message) => logger.info(message.trim()) },
-        })
-    );
+if (config.env !== "test") {
+  app.use(
+    morgan("combined", {
+      stream: { write: (message) => logger.info(message.trim()) },
+    }),
+  );
 }
 
 // ═══════════════════════════════════════════════
 // Health Check
 // ═══════════════════════════════════════════════
 
-app.get('/health', (req, res) => {
-    res.status(200).json({
-        success: true,
-        message: 'Server is running',
-        timestamp: new Date().toISOString(),
-        environment: config.env,
-    });
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Server is running",
+    timestamp: new Date().toISOString(),
+    environment: config.env,
+  });
 });
 
 // ═══════════════════════════════════════════════
