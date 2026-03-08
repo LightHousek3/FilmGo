@@ -23,9 +23,7 @@ const getGenreById = async (id) => {
 };
 
 const updateGenreById = async (id, updateBody) => {
-    const genre = await getGenreById(id);
-    Object.assign(genre, updateBody);
-    await genre.save();
+    const genre = await Genre.findByIdAndUpdate(id, updateBody, { new: true });
     return genre;
 };
 

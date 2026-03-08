@@ -16,15 +16,11 @@ const objectId = (value, helpers) => {
 
 /**
  * Validate password strength
- * - At least 8 characters
- * - At least 1 letter and 1 number
+ * - At least 6 characters
  */
 const password = (value, helpers) => {
-    if (value.length < 8) {
-        return helpers.message('Password must be at least 8 characters');
-    }
-    if (!value.match(/\d/) || !value.match(/[a-zA-Z]/)) {
-        return helpers.message('Password must contain at least 1 letter and 1 number');
+    if (value.length < 6) {
+        return helpers.message('Password must be at least 6 characters');
     }
     return value;
 };

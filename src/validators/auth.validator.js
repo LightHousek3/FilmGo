@@ -37,10 +37,42 @@ const verifyEmail = {
     }),
 };
 
+const resendVerificationEmail = {
+    body: Joi.object().keys({
+        email: Joi.string().required().email(),
+    }),
+};
+
+const forgotPassword = {
+    body: Joi.object().keys({
+        email: Joi.string().required().email(),
+    }),
+};
+
+const resetPassword = {
+    query: Joi.object().keys({
+        token: Joi.string().required(),
+    }),
+    body: Joi.object().keys({
+        password: Joi.string().required().custom(password),
+    }),
+};
+
+const resendForgotPassword = {
+    body: Joi.object().keys({
+        email: Joi.string().required().email(),
+    }),
+};
+
 module.exports = {
     register,
     login,
     refreshToken,
     logout,
     verifyEmail,
+    resendVerificationEmail,
+    forgotPassword,
+    resetPassword,
+    resendForgotPassword,
 };
+

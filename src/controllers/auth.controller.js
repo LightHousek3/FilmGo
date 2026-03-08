@@ -5,21 +5,41 @@ const config = require('../config');
 
 /**
  * POST /auth/register
+ * Register new user → sends verification email, account is INACTIVE
  */
 const register = asyncHandler(async (req, res) => {
-    const { user, tokens } = await authService.register(req.body);
-
-    // Set refresh token in httpOnly cookie
-    setRefreshTokenCookie(res, tokens.refreshToken);
+    const { user } = await authService.register(req.body);
 
     ResponseHandler.created(res, {
         message: messages.AUTH.REGISTER_SUCCESS,
-        data: {
-            user,
-            tokens: {
-                accessToken: tokens.accessToken,
-            },
-        },
+        data: { user },
+    });
+});
+
+/**
+ * GET /auth/verify-email?token=xxx
+ * Verify email from link sent to user's inbox
+ */
+const verifyEmail = asyncHandler(async (req, res) => {
+    const { token } = req.query;
+    const { user } = await authService.verifyEmail(token);
+
+    ResponseHandler.success(res, {
+        message: messages.AUTH.EMAIL_VERIFIED,
+        data: { user },
+    });
+});
+
+/**
+ * POST /auth/resend-verification
+ * Resend the email verification link
+ */
+const resendVerificationEmail = asyncHandler(async (req, res) => {
+    await authService.resendVerificationEmail(req.body.email);
+
+    // Always return success (security: don't reveal if email exists)
+    ResponseHandler.success(res, {
+        message: messages.AUTH.RESEND_VERIFICATION_SENT,
     });
 });
 
@@ -38,7 +58,6 @@ const login = asyncHandler(async (req, res) => {
             user,
             tokens: {
                 accessToken: tokens.accessToken,
-                // Also return refresh token in body for mobile clients
                 refreshToken: tokens.refreshToken,
             },
         },
@@ -54,7 +73,6 @@ const logout = asyncHandler(async (req, res) => {
         await authService.logout(refreshToken);
     }
 
-    // Clear cookie
     res.clearCookie('refreshToken');
 
     ResponseHandler.success(res, {
@@ -67,7 +85,7 @@ const logout = asyncHandler(async (req, res) => {
  */
 const refreshTokens = asyncHandler(async (req, res) => {
     const refreshToken = req.body.refreshToken || req.cookies?.refreshToken;
-    const { accessToken, refreshToken: newRefreshToken, user } = await authService.refreshTokens(refreshToken);
+    const { accessToken, refreshToken: newRefreshToken } = await authService.refreshTokens(refreshToken);
 
     setRefreshTokenCookie(res, newRefreshToken);
 
@@ -90,6 +108,47 @@ const getMe = asyncHandler(async (req, res) => {
 });
 
 /**
+ * POST /auth/forgot-password
+ * Send password reset email
+ */
+const forgotPassword = asyncHandler(async (req, res) => {
+    await authService.forgotPassword(req.body.email);
+
+    // Always return success (security: don't reveal if email exists)
+    ResponseHandler.success(res, {
+        message: messages.AUTH.FORGOT_PASSWORD_SENT,
+    });
+});
+
+/**
+ * POST /auth/reset-password?token=xxx
+ * Reset password using token from email
+ */
+const resetPassword = asyncHandler(async (req, res) => {
+    const { token } = req.query;
+    const { password } = req.body;
+    await authService.resetPassword(token, password);
+
+    ResponseHandler.success(res, {
+        message: messages.AUTH.RESET_PASSWORD_SUCCESS,
+    });
+});
+
+/**
+ * POST /auth/resend-forgot-password
+ * Resend password reset email
+ */
+const resendForgotPassword = asyncHandler(async (req, res) => {
+    await authService.resendForgotPassword(req.body.email);
+
+    ResponseHandler.success(res, {
+        message: messages.AUTH.FORGOT_PASSWORD_SENT,
+    });
+});
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/**
  * Set refresh token as httpOnly cookie
  */
 const setRefreshTokenCookie = (res, token) => {
@@ -110,8 +169,13 @@ const setRefreshTokenCookie = (res, token) => {
 
 module.exports = {
     register,
+    verifyEmail,
+    resendVerificationEmail,
     login,
     logout,
     refreshTokens,
     getMe,
+    forgotPassword,
+    resetPassword,
+    resendForgotPassword,
 };
