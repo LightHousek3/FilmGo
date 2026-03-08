@@ -1,9 +1,22 @@
-const User = require('./user.model');
-const RefreshToken = require('./refreshToken.model');
-const Genre = require('./genre.model');
+const User = require("./user.model");
+const RefreshToken = require("./refreshToken.model");
+const Genre = require("./genre.model");
+const Movie = require("./movie.model");
+const Showtime = require("./showtime.model");
+const Screen = require("./screen.model");
+const Theater = require("./theater.model");
+const Promotion = require("./promotion.model");
+const TicketPrice = require("./ticketPrice.model");
 
 module.exports = {
-    User,
-    RefreshToken,
-    Genre,
+  User,
+  RefreshToken,
+  Genre,
+  Theater,
+  Promotion,
+  Movie,
+  Showtime,
+  Screen,
+  Theater,
+  TicketPrice,
 };

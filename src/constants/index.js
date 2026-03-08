@@ -35,6 +35,13 @@ const SHOWTIME_STATUS = {
   ENDED: 'ENDED',
 };
 
+/**
+ * Buffer time between showtimes in the same screen (in minutes)
+ * This allows time for cleaning and preparation between shows
+ * @constant {number}
+ */
+const SHOWTIME_BUFFER_MINUTES = 30;
+
 const SEAT_STATUS = {
   AVAILABLE: 'AVAILABLE',
   UNAVAILABLE: 'UNAVAILABLE',
@@ -99,6 +106,7 @@ module.exports = {
   MOVIE_TYPE,
   AGE_RATING,
   SHOWTIME_STATUS,
+  SHOWTIME_BUFFER_MINUTES,
   SEAT_STATUS,
   SEAT_TYPE,
   BANNER_TYPE,

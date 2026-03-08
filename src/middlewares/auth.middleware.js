@@ -54,7 +54,7 @@ const authenticate = async (req, res, next) => {
 
 /**
  * Authorize by roles
- * @param  {...string} roles - Allowed roles (e.g., 'ROLE_ADMIN', 'ROLE_USER')
+ * @param  {...string} roles - Allowed roles (e.g., 'ADMIN', 'USER')
  */
 const authorize = (...roles) => {
     return (req, res, next) => {
