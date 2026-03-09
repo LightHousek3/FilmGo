@@ -6,11 +6,15 @@ const movieValidator = require("./movie.validator");
 const showtimeValidator = require("./showtime.validator");
 const seatValidator = require("./seat.validator");
 const ticketPriceValidator = require("./ticketPrice.validator");
+const userValidator = require('./user.validator');
+const newsValidator = require('./news.validator');
 
 module.exports = {
   authValidator,
   theaterValidator,
   customValidator,
+    userValidator,
+    newsValidator,
   promotionValidator,
   movieValidator,
   showtimeValidator,

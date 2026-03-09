@@ -10,11 +10,13 @@ const Payment = require("./payment.model");
 const Seat = require("./seat.model");
 const BookingSeat = require("./bookingseat.model");
 const TicketPrice = require("./ticketPrice.model");
+const News = require('./news.model');
 
 module.exports = {
   User,
   RefreshToken,
   Genre,
+  News,
   Promotion,
   Movie,
   Showtime,

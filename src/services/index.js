@@ -8,10 +8,14 @@ const movieService = require("./movie.service");
 const showtimeService = require("./showtime.service");
 const ticketPriceService = require("./ticketPrice.service");
 const seatService = require('./seat.service');
+const userService = require('./user.service');
+const newsService = require('./news.service');
 
 module.exports = {
   authService,
   genreService,
+  userService,
+  newsService,
   emailService,
   theaterService,
   geocodeService,

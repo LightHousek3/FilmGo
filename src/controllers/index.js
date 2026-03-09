@@ -6,6 +6,7 @@ const movieController = require("./movie.controller");
 const seatController = require("./seat.controller");
 const ticketPriceController = require("./ticketPrice.controller");
 const showtimeController = require("./showtime.controller");
+const userController = require('./user.controller');
 
 module.exports = {
   authController,
@@ -16,4 +17,5 @@ module.exports = {
   showtimeController,
   seatController,
   ticketPriceController,
+  userController,
 };
