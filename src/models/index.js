@@ -10,7 +10,9 @@ const Payment = require("./payment.model");
 const Seat = require("./seat.model");
 const BookingSeat = require("./bookingseat.model");
 const TicketPrice = require("./ticketPrice.model");
-const News = require('./news.model');
+const News = require("./news.model");
+const Service = require("./service.model");
+const Booking = require("./booking.model");
 
 module.exports = {
   User,
@@ -26,4 +28,6 @@ module.exports = {
   BookingSeat,
   Theater,
   TicketPrice,
+  Service,
+  Booking,
 };

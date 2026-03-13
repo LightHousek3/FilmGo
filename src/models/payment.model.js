@@ -34,10 +34,62 @@ const paymentSchema = new mongoose.Schema(
       min: 0,
     },
 
+<<<<<<< Updated upstream
+=======
+    // Generic transaction reference
+>>>>>>> Stashed changes
     transactionNo: {
       type: String,
       trim: true,
     },
+<<<<<<< Updated upstream
+=======
+
+    // ── VNPay-specific fields ──────────────────────────────
+    // Unique txnRef sent to VNPay (paymentId-based to allow retries)
+    vnpTxnRef: {
+      type: String,
+      trim: true,
+      index: true,
+      sparse: true,
+    },
+
+    // VNPay's internal transaction number (from IPN / return)
+    vnpTransactionNo: {
+      type: String,
+      trim: true,
+    },
+
+    // Bank transaction number
+    vnpBankTranNo: {
+      type: String,
+      trim: true,
+    },
+
+    // Bank code used for payment
+    vnpBankCode: {
+      type: String,
+      trim: true,
+    },
+
+    // Card type (ATM, VISA, ...)
+    vnpCardType: {
+      type: String,
+      trim: true,
+    },
+
+    // VNPay response code ("00" = success)
+    vnpResponseCode: {
+      type: String,
+      trim: true,
+    },
+
+    // Payment date returned by VNPay (yyyyMMddHHmmss)
+    vnpPayDate: {
+      type: String,
+      trim: true,
+    },
+>>>>>>> Stashed changes
   },
   {
     timestamps: true,
