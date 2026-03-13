@@ -1,31 +1,31 @@
-const dotenv = require("dotenv");
-const path = require("path");
+const dotenv = require('dotenv');
+const path = require('path');
 
-dotenv.config({ path: path.join(__dirname, "../../.env") });
+dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const config = {
-  env: process.env.NODE_ENV || "development",
+  env: process.env.NODE_ENV || 'development',
   port: parseInt(process.env.PORT, 10) || 3000,
-  apiPrefix: process.env.API_PREFIX || "/api/v1",
+  apiPrefix: process.env.API_PREFIX || '/api/v1',
 
   mongoose: {
-    url: process.env.MONGODB_URI || "mongodb://localhost:27017/FilmGo",
+    url: process.env.MONGODB_URI || 'mongodb://localhost:27017/FilmGo',
     options: {
-      autoIndex: process.env.NODE_ENV !== "production",
+      autoIndex: process.env.NODE_ENV !== 'production',
     },
   },
 
   jwt: {
     accessSecret: process.env.JWT_ACCESS_SECRET,
     refreshSecret: process.env.JWT_REFRESH_SECRET,
-    accessExpiration: process.env.JWT_ACCESS_EXPIRATION || "15m",
-    refreshExpiration: process.env.JWT_REFRESH_EXPIRATION || "7d",
+    accessExpiration: process.env.JWT_ACCESS_EXPIRATION || '15m',
+    refreshExpiration: process.env.JWT_REFRESH_EXPIRATION || '7d',
   },
 
   cors: {
     origin: process.env.CORS_ORIGIN
-      ? process.env.CORS_ORIGIN.split(",")
-      : ["http://localhost:3000", "http://localhost:5173"],
+      ? process.env.CORS_ORIGIN.split(',')
+      : ['http://localhost:3000', 'http://localhost:5173'],
   },
 
   rateLimit: {
@@ -34,13 +34,13 @@ const config = {
   },
 
   log: {
-    level: process.env.LOG_LEVEL || "debug",
-    dir: process.env.LOG_DIR || "logs",
+    level: process.env.LOG_LEVEL || 'debug',
+    dir: process.env.LOG_DIR || 'logs',
   },
 
   cookie: {
-    secure: process.env.COOKIE_SECURE === "true",
-    domain: process.env.COOKIE_DOMAIN || "localhost",
+    secure: process.env.COOKIE_SECURE === 'true',
+    domain: process.env.COOKIE_DOMAIN || 'localhost',
   },
 
   email: {
@@ -60,6 +60,14 @@ const config = {
   app: {
     frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000/api/v1/auth',
   },
-}
+
+  vnpay: {
+    tmnCode: process.env.VNPAY_TMN_CODE || '',
+    hashSecret: process.env.VNPAY_HASH_SECRET || '',
+    url: process.env.VNPAY_URL || 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html',
+    returnUrl: process.env.VNPAY_RETURN_URL || 'http://localhost:3000/api/v1/payments/vnpay/return',
+    ipnUrl: process.env.VNPAY_IPN_URL || 'http://localhost:3000/api/v1/payments/vnpay/ipn',
+  },
+};
 
 module.exports = config;

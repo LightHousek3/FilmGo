@@ -93,6 +93,15 @@ const PAYMENT_STATUS = {
   CANCELLED: 'CANCELLED',
 };
 
+const BOOKING_STATUS = {
+  PENDING: 'PENDING',
+  CONFIRMED: 'CONFIRMED',
+  CANCELLED: 'CANCELLED',
+};
+
+/** Minutes a seat hold is reserved before auto-release */
+const BOOKING_HOLD_MINUTES = 10;
+
 const DAY_TYPE = {
   WEEKDAY: false,
   WEEKEND: true,
@@ -116,5 +125,7 @@ module.exports = {
   PROMOTION_STATUS,
   PAYMENT_METHOD,
   PAYMENT_STATUS,
+  BOOKING_STATUS,
+  BOOKING_HOLD_MINUTES,
   DAY_TYPE,
 };

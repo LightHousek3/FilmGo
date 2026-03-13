@@ -39,7 +39,7 @@ const ensureNoOverlappingShowtimeInScreen = async ({
 }) => {
   // Add buffer time (in milliseconds) to prevent showtimes from being too close
   const bufferMs = SHOWTIME_BUFFER_MINUTES * 60 * 1000;
-  
+
   const overlapQuery = {
     screen: getObjectIdValue(screen),
     // Check if any showtime overlaps with [startTime - buffer, endTime + buffer]
