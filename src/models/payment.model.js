@@ -34,16 +34,11 @@ const paymentSchema = new mongoose.Schema(
       min: 0,
     },
 
-<<<<<<< Updated upstream
-=======
     // Generic transaction reference
->>>>>>> Stashed changes
     transactionNo: {
       type: String,
       trim: true,
     },
-<<<<<<< Updated upstream
-=======
 
     // ── VNPay-specific fields ──────────────────────────────
     // Unique txnRef sent to VNPay (paymentId-based to allow retries)
@@ -89,7 +84,6 @@ const paymentSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
->>>>>>> Stashed changes
   },
   {
     timestamps: true,

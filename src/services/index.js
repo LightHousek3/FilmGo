@@ -10,12 +10,9 @@ const ticketPriceService = require("./ticketPrice.service");
 const seatService = require('./seat.service');
 const userService = require('./user.service');
 const newsService = require('./news.service');
-<<<<<<< Updated upstream
-=======
 const serviceService = require('./service.service');
 const bookingService = require('./booking.service');
 const paymentService = require('./payment.service');
->>>>>>> Stashed changes
 
 module.exports = {
   authService,

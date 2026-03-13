@@ -7,19 +7,12 @@ const authRoute = require("./auth.route");
 const theaterRoute = require("./theater.route");
 const seatRoute = require("./seat.route");
 const ticketPriceRoute = require("./ticketPrice.route");
-<<<<<<< Updated upstream
-const newsRoute = require('./news.route');
-const screenRoute = require('./screen.route');
-const userRoute = require('./user.route');
-=======
-const festivalRoute = require('./festival.routes');
 const newsRoute = require('./news.route');
 const screenRoute = require('./screen.route');
 const userRoute = require('./user.route');
 const serviceRoute = require('./service.route');
 const bookingRoute = require('./booking.route');
 const paymentRoute = require('./payment.route');
->>>>>>> Stashed changes
 
 const router = express.Router();
 
@@ -34,15 +27,10 @@ const routes = [
   { path: "/movies", route: movieRoute },
   { path: "/showtimes", route: showtimeRoute },
   { path: "/ticket-prices", route: ticketPriceRoute },
-<<<<<<< Updated upstream
-  { path: "/seats", route: seatRoute },
-=======
-  { path: '/festivals', route: festivalRoute },
   { path: "/seats", route: seatRoute },
   { path: "/services", route: serviceRoute },
   { path: "/bookings", route: bookingRoute },
   { path: "/payments", route: paymentRoute },
->>>>>>> Stashed changes
 ];
 
 routes.forEach((route) => {

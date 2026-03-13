@@ -76,6 +76,42 @@ const updateSeatStatus = {
   }),
 };
 
+const createSeatsBulk = {
+  body: Joi.object().keys({
+    screenId: Joi.string().required(),
+    seats: Joi.array().items(
+      Joi.object().keys({
+        seatNumber: Joi.string().max(50).required(),
+        type: Joi.string().valid("STANDARD", "VIP", "SWEETBOX").default("STANDARD"),
+        status: Joi.string().valid("AVAILABLE", "UNAVAILABLE").default("AVAILABLE"),
+      })
+    ).min(1).required(),
+  }).unknown(true),
+};
+
+const updateSeatsBulk = {
+  body: Joi.object().keys({
+    screenId: Joi.string().required(),
+    updates: Joi.array().items(
+      Joi.object().keys({
+        seatNumber: Joi.string().required(),
+        updateBody: Joi.object().keys({
+          seatNumber: Joi.string().max(50),
+          type: Joi.string().valid("STANDARD", "VIP", "SWEETBOX"),
+          status: Joi.string().valid("AVAILABLE", "UNAVAILABLE"),
+        }).min(1).required(),
+      })
+    ).min(1).required(),
+  }).unknown(true),
+};
+
+const deleteSeatsBulk = {
+  body: Joi.object().keys({
+    screenId: Joi.string().required(),
+    seatNumbers: Joi.array().items(Joi.string()).min(1).required(),
+  }).unknown(true),
+};
+
 module.exports = {
   createSeat,
   getSeats,
@@ -83,4 +119,7 @@ module.exports = {
   updateSeat,
   deleteSeat,
   updateSeatStatus,
+  createSeatsBulk,
+  updateSeatsBulk,
+  deleteSeatsBulk,
 };

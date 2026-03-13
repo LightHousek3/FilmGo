@@ -96,11 +96,55 @@ const updateSeatStatus = asyncHandler(async (req, res) => {
 });
 
 
+// ─────────────────────────────────────────
+// CREATE SEATS BULK
+// ─────────────────────────────────────────
+const createSeatsBulk = asyncHandler(async (req, res) => {
+
+    const seats = await seatService.createSeatsBulk(req.body.screenId, req.body.seats);
+
+    ResponseHandler.created(res, {
+        message: messages.CRUD.CREATED('Seats'),
+        data: seats
+    });
+});
+
+
+// ─────────────────────────────────────────
+// UPDATE SEATS BULK
+// ─────────────────────────────────────────
+const updateSeatsBulk = asyncHandler(async (req, res) => {
+
+    const seats = await seatService.updateSeatsBulk(req.body.screenId, req.body.updates);
+
+    ResponseHandler.success(res, {
+        message: messages.CRUD.UPDATED('Seats'),
+        data: seats
+    });
+});
+
+
+// ─────────────────────────────────────────
+// DELETE SEATS BULK
+// ─────────────────────────────────────────
+const deleteSeatsBulk = asyncHandler(async (req, res) => {
+
+    await seatService.deleteSeatsBulk(req.body.screenId, req.body.seatNumbers);
+
+    ResponseHandler.success(res, {
+        message: messages.CRUD.DELETED('Seats')
+    });
+});
+
+
 module.exports = {
     createSeat,
     getSeats,
     getSeat,
     updateSeat,
     deleteSeat,
-    updateSeatStatus
+    updateSeatStatus,
+    createSeatsBulk,
+    updateSeatsBulk,
+    deleteSeatsBulk
 };

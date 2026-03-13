@@ -8,24 +8,16 @@ const seatValidator = require("./seat.validator");
 const ticketPriceValidator = require("./ticketPrice.validator");
 const userValidator = require('./user.validator');
 const newsValidator = require('./news.validator');
-<<<<<<< Updated upstream
-=======
 const serviceValidator = require('./service.validator');
 const bookingValidator = require('./booking.validator');
 const paymentValidator = require('./payment.validator');
->>>>>>> Stashed changes
 
 module.exports = {
   authValidator,
   theaterValidator,
   customValidator,
-<<<<<<< Updated upstream
-    userValidator,
-    newsValidator,
-=======
   userValidator,
   newsValidator,
->>>>>>> Stashed changes
   promotionValidator,
   movieValidator,
   showtimeValidator,
