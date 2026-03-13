@@ -25,7 +25,7 @@ const bookingSeatSchema = new mongoose.Schema(
             min: 0,
         },
     },
-    { _id: false }
+    { _id: false },
 );
 
 // ── Sub-schema: Booking Service ──────────────────────────
@@ -52,7 +52,7 @@ const bookingServiceSchema = new mongoose.Schema(
             min: 0,
         },
     },
-    { _id: false }
+    { _id: false },
 );
 
 const bookingSchema = new mongoose.Schema(
@@ -119,7 +119,7 @@ const bookingSchema = new mongoose.Schema(
     },
     {
         timestamps: { createdAt: true, updatedAt: false },
-    }
+    },
 );
 
 // ─── Indexes ─────────────────────────────────────────────

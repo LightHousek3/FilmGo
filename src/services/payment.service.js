@@ -12,17 +12,23 @@ const logger = require('../config/logger');
  */
 const toVnpDateString = (date) => {
     const vnDate = new Date(date.getTime() + 7 * 60 * 60 * 1000);
-    return vnDate.toISOString().replace(/[-T:.Z]/g, '').slice(0, 14);
+    return vnDate
+        .toISOString()
+        .replace(/[-T:.Z]/g, '')
+        .slice(0, 14);
 };
 
 /**
  * Sort an object's keys alphabetically and build a query string.
- * IMPORTANT: VNPay requires keys sorted A→Z, values URL-encoded (RFC 3986).
+ * IMPORTANT: VNPay requires keys sorted A→Z, values URL-encoded (RFC 3986) with spaces as '+'.
  */
 const buildSortedQueryString = (params) => {
     return Object.keys(params)
         .sort()
-        .map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
+        .map(
+            (key) =>
+                `${encodeURIComponent(key)}=${encodeURIComponent(String(params[key])).replace(/%20/g, '+')}`,
+        )
         .join('&');
 };
 
@@ -87,7 +93,7 @@ const createVnpayPayment = async ({ bookingId, userId, clientIp, locale = 'vn' }
     // Cancel any previous PENDING payment for this booking (re-initiate scenario)
     await Payment.updateMany(
         { bookingId, paymentStatus: 'PENDING' },
-        { paymentStatus: 'CANCELLED' }
+        { paymentStatus: 'CANCELLED' },
     );
 
     // Create new payment record
@@ -113,7 +119,7 @@ const createVnpayPayment = async ({ bookingId, userId, clientIp, locale = 'vn' }
         vnp_Amount: String(booking.totalPrice * 100), // VNPay requires amount * 100
         vnp_CreateDate: createDate,
         vnp_CurrCode: 'VND',
-        vnp_IpAddr: clientIp || '127.0.0.1',
+        vnp_IpAddr: clientIp,
         vnp_Locale: locale,
         vnp_OrderInfo: `Thanh toan ve phim ${vnpTxnRef}`,
         vnp_OrderType: 'billpayment',
@@ -133,7 +139,9 @@ const createVnpayPayment = async ({ bookingId, userId, clientIp, locale = 'vn' }
     payment.vnpTxnRef = vnpTxnRef;
     await payment.save();
 
-    logger.info(`VNPay payment created: txnRef=${vnpTxnRef}, booking=${bookingId}, amount=${booking.totalPrice}`);
+    logger.info(
+        `VNPay payment created: txnRef=${vnpTxnRef}, booking=${bookingId}, amount=${booking.totalPrice}`,
+    );
 
     return { payment, paymentUrl };
 };
@@ -158,13 +166,10 @@ const handleVnpayIpn = async (ipnParams) => {
     const vnpTxnRef = ipnParams['vnp_TxnRef'];
     const vnpResponseCode = ipnParams['vnp_ResponseCode'];
     const vnpTransactionNo = ipnParams['vnp_TransactionNo'];
-    const vnpBankTranNo = ipnParams['vnp_BankTranNo'];
-    const vnpBankCode = ipnParams['vnp_BankCode'];
-    const vnpCardType = ipnParams['vnp_CardType'];
-    const vnpPayDate = ipnParams['vnp_PayDate'];
+
     const vnpAmount = parseInt(ipnParams['vnp_Amount'], 10) / 100;
 
-    const payment = await Payment.findOne({ vnpTxnRef });
+    const payment = await Payment.findOne({ _id: vnpTxnRef });
 
     if (!payment) {
         logger.warn(`VNPay IPN: payment not found for txnRef=${vnpTxnRef}`);
@@ -173,28 +178,24 @@ const handleVnpayIpn = async (ipnParams) => {
 
     // Idempotency: already processed
     if (payment.paymentStatus !== 'PENDING') {
-        logger.info(`VNPay IPN: already processed txnRef=${vnpTxnRef}, status=${payment.paymentStatus}`);
+        logger.info(
+            `VNPay IPN: already processed txnRef=${vnpTxnRef}, status=${payment.paymentStatus}`,
+        );
         return { RspCode: '02', Message: 'Order already confirmed' };
     }
 
     // Validate amount matches
     if (Math.abs(payment.amount - vnpAmount) > 0.01) {
-        logger.error(`VNPay IPN: amount mismatch txnRef=${vnpTxnRef}, expected=${payment.amount}, got=${vnpAmount}`);
+        logger.error(
+            `VNPay IPN: amount mismatch txnRef=${vnpTxnRef}, expected=${payment.amount}, got=${vnpAmount}`,
+        );
         return { RspCode: '04', Message: 'Invalid amount' };
     }
-
-    // Update payment record
-    payment.vnpTransactionNo = vnpTransactionNo;
-    payment.vnpBankTranNo = vnpBankTranNo;
-    payment.vnpBankCode = vnpBankCode;
-    payment.vnpCardType = vnpCardType;
-    payment.vnpResponseCode = vnpResponseCode;
-    payment.vnpPayDate = vnpPayDate;
-    payment.transactionNo = vnpTransactionNo;
 
     if (vnpResponseCode === '00') {
         // Payment successful
         payment.paymentStatus = 'COMPLETED';
+        payment.transactionNo = vnpTransactionNo;
         payment.paymentTime = new Date();
         await payment.save();
 
@@ -204,7 +205,9 @@ const handleVnpayIpn = async (ipnParams) => {
             $unset: { expiresAt: '' },
         });
 
-        logger.info(`VNPay IPN: payment confirmed txnRef=${vnpTxnRef}, booking=${payment.bookingId}`);
+        logger.info(
+            `VNPay IPN: payment confirmed txnRef=${vnpTxnRef}, booking=${payment.bookingId}`,
+        );
         return { RspCode: '00', Message: 'Confirm Success' };
     } else {
         // Payment failed
@@ -243,7 +246,7 @@ const handleVnpayReturn = async (returnParams) => {
     const vnpResponseCode = returnParams['vnp_ResponseCode'];
     const vnpTxnRef = returnParams['vnp_TxnRef'];
 
-    const payment = await Payment.findOne({ vnpTxnRef }).populate('bookingId');
+    const payment = await Payment.findOne({ _id: vnpTxnRef }).populate('bookingId');
 
     if (!payment) {
         return { success: false, message: messages.PAYMENT.NOT_FOUND, data: null };
@@ -257,8 +260,6 @@ const handleVnpayReturn = async (returnParams) => {
             paymentId: payment._id,
             amount: payment.amount,
             status: payment.paymentStatus,
-            responseCode: vnpResponseCode,
-            transactionNo: payment.vnpTransactionNo,
             payDate: returnParams['vnp_PayDate'],
         },
     };

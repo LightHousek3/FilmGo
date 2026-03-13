@@ -7,15 +7,12 @@ const promotionService = require("./promotion.service");
 const movieService = require("./movie.service");
 const showtimeService = require("./showtime.service");
 const ticketPriceService = require("./ticketPrice.service");
-const seatService = require('./seat.service');
-const userService = require('./user.service');
-const newsService = require('./news.service');
-<<<<<<< Updated upstream
-=======
-const serviceService = require('./service.service');
-const bookingService = require('./booking.service');
-const paymentService = require('./payment.service');
->>>>>>> Stashed changes
+const seatService = require("./seat.service");
+const userService = require("./user.service");
+const newsService = require("./news.service");
+const serviceService = require("./service.service");
+const bookingService = require("./booking.service");
+const paymentService = require("./payment.service");
 
 module.exports = {
   authService,

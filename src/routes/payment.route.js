@@ -14,7 +14,7 @@ router.post(
     '/vnpay',
     authenticate,
     validate(paymentValidator.initiateVnpay),
-    paymentController.initiateVnpay
+    paymentController.initiateVnpay,
 );
 
 /**
@@ -22,7 +22,7 @@ router.post(
  * @desc    VNPay IPN callback (server-to-server). No auth required.
  * @access  Public (VNPay server)
  */
-router.post('/vnpay/ipn', paymentController.vnpayIpn);
+router.get('/vnpay/ipn', paymentController.vnpayIpn);
 
 /**
  * @route   GET /api/v1/payments/vnpay/return
