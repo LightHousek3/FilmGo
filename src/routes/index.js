@@ -17,24 +17,24 @@ const paymentRoute = require('./payment.route');
 const router = express.Router();
 
 const routes = [
-  { path: '/auth', route: authRoute },
-  { path: '/genres', route: genreRoute },
-  { path: '/news', route: newsRoute },
-  { path: '/screens', route: screenRoute },
-  { path: '/users', route: userRoute },
-  { path: '/theaters', route: theaterRoute },
-  { path: '/promotions', route: promotionRoute },
-  { path: '/movies', route: movieRoute },
-  { path: '/showtimes', route: showtimeRoute },
-  { path: '/ticket-prices', route: ticketPriceRoute },
-  { path: '/seats', route: seatRoute },
-  { path: '/services', route: serviceRoute },
-  { path: '/bookings', route: bookingRoute },
-  { path: '/payments', route: paymentRoute },
+    { path: '/auth', route: authRoute },
+    { path: '/genres', route: genreRoute },
+    { path: '/news', route: newsRoute },
+    { path: '/screens', route: screenRoute },
+    { path: '/users', route: userRoute },
+    { path: '/theaters', route: theaterRoute },
+    { path: '/promotions', route: promotionRoute },
+    { path: '/movies', route: movieRoute },
+    { path: '/showtimes', route: showtimeRoute },
+    { path: '/ticket-prices', route: ticketPriceRoute },
+    { path: '/seats', route: seatRoute },
+    { path: '/services', route: serviceRoute },
+    { path: '/bookings', route: bookingRoute },
+    { path: '/payments', route: paymentRoute },
 ];
 
 routes.forEach((route) => {
-  router.use(route.path, route.route);
+    router.use(route.path, route.route);
 });
 
 module.exports = router;

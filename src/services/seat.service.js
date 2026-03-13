@@ -1,7 +1,8 @@
-const { Seat, Screen, BookingSeat, Booking, Payment } = require("../models");
+const { Seat, Screen, Booking, Payment, Showtime } = require("../models");
 const { ApiError } = require("../utils");
 const { httpStatus, messages } = require("../constants");
 const logger = require("../config/logger");
+const { BOOKING_STATUS } = require("../constants");
 
 const createSeat = async (body) => {
   try {
@@ -49,35 +50,37 @@ const getSeatById = async (id) => {
 };
 
 const checkActiveBooking = async (seatId) => {
-  const bookingSeats = await BookingSeat.find({ seatId });
+  const now = new Date();
 
-  if (!bookingSeats.length) {
-    return false;
-  }
-
-  const bookingIds = bookingSeats.map((bs) => bs.bookingId);
-
-  const activePayments = await Payment.find({
-    bookingId: { $in: bookingIds },
-    paymentStatus: { $in: ["PENDING", "COMPLETED"] },
+  const activeBooking = await Booking.findOne({
+    "seats.seat": seatId,
+    $or: [
+      { status: BOOKING_STATUS.CONFIRMED },
+      {
+        status: BOOKING_STATUS.PENDING,
+        expiresAt: { $gt: now },
+      },
+    ],
+  }).populate({
+    path: "showtime",
+    match: { endTime: { $gt: now } },
   });
 
-  return activePayments.length > 0;
+  if (activeBooking && activeBooking.showtime !== null) {
+    return true;
+  }
+  return false;
 };
 
 const updateSeatById = async (seatId, updateBody) => {
   try {
     const seat = await getSeatById(seatId);
 
-    // rule: không đổi type nếu đang có booking active
-    if (updateBody.type && updateBody.type !== seat.type) {
-      const hasActiveBooking = await checkActiveBooking(seatId);
+    // Prevent any update if seat has active booking
+    const hasActiveBooking = await checkActiveBooking(seatId);
 
-      if (hasActiveBooking) {
-        throw ApiError.conflict(
-          "Cannot change seat type while seat has active booking",
-        );
-      }
+    if (hasActiveBooking) {
+      throw ApiError.conflict("Cannot update seat while it has active booking");
     }
 
     Object.assign(seat, updateBody);
@@ -131,6 +134,93 @@ const updateSeatStatus = async (seatId, status) => {
   }
 };
 
+const createSeatsBulk = async (screenId, seatsData) => {
+  try {
+    // Check screen exists
+    const screen = await Screen.findById(screenId);
+    if (!screen) {
+      throw ApiError.notFound(messages.CRUD.NOT_FOUND("Screen"));
+    }
+
+    // Validate and prepare seats
+    const seatsToCreate = [];
+    for (const data of seatsData) {
+      // Check unique seatNumber
+      const existing = await Seat.findOne({
+        screenId,
+        seatNumber: data.seatNumber,
+      });
+      if (existing) {
+        throw ApiError.conflict(`Seat ${data.seatNumber} already exists`);
+      }
+      seatsToCreate.push({ screenId, ...data });
+    }
+
+    return Seat.insertMany(seatsToCreate);
+  } catch (error) {
+    logger.error("CREATE_SEATS_BULK_ERROR", error);
+    throw error;
+  }
+};
+
+const updateSeatsBulk = async (screenId, updates) => {
+  try {
+    // updates: array of { seatNumber, updateBody }
+    const results = [];
+    for (const update of updates) {
+      const seat = await Seat.findOne({
+        screenId,
+        seatNumber: update.seatNumber,
+      });
+      if (!seat) {
+        throw ApiError.notFound(`Seat ${update.seatNumber} not found`);
+      }
+
+      // Check active booking
+      const hasActiveBooking = await checkActiveBooking(seat._id);
+      if (hasActiveBooking) {
+        throw ApiError.conflict(
+          `Cannot update seat ${update.seatNumber} with active booking`,
+        );
+      }
+
+      Object.assign(seat, update.updateBody);
+      await seat.save();
+      results.push(seat);
+    }
+    return results;
+  } catch (error) {
+    logger.error("UPDATE_SEATS_BULK_ERROR", error);
+    throw error;
+  }
+};
+
+const deleteSeatsBulk = async (screenId, seatNumbers) => {
+  try {
+    const results = [];
+    for (const seatNumber of seatNumbers) {
+      const seat = await Seat.findOne({ screenId, seatNumber });
+      if (!seat) {
+        throw ApiError.notFound(`Seat ${seatNumber} not found`);
+      }
+
+      const hasActiveBooking = await checkActiveBooking(seat._id);
+      if (hasActiveBooking) {
+        throw ApiError.conflict(
+          `Cannot delete seat ${seatNumber} with active booking`,
+        );
+      }
+
+      await seat.softDelete();
+      results.push(seat);
+    }
+    return results;
+  } catch (error) {
+    logger.error("DELETE_SEATS_BULK_ERROR", error);
+    throw error;
+  }
+};
+
 module.exports = {
   createSeat,
   getSeats,
@@ -138,4 +228,7 @@ module.exports = {
   updateSeatById,
   deleteSeatById,
   updateSeatStatus,
+  createSeatsBulk,
+  updateSeatsBulk,
+  deleteSeatsBulk,
 };
