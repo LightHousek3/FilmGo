@@ -3,10 +3,6 @@ const { SHOWTIME_STATUS } = require("../constants");
 
 const createShowtime = {
   body: Joi.object().keys({
-    status: Joi.string()
-      .valid(...Object.values(SHOWTIME_STATUS))
-      .default(SHOWTIME_STATUS.UPCOMING),
-
     startTime: Joi.date().required(),
 
     endTime: Joi.date().greater(Joi.ref("startTime")).required().messages({
@@ -26,8 +22,6 @@ const updateShowtime = {
 
   body: Joi.object()
     .keys({
-      status: Joi.string().valid(...Object.values(SHOWTIME_STATUS)),
-
       startTime: Joi.date(),
 
       endTime: Joi.date(),
@@ -52,8 +46,18 @@ const deleteShowtime = {
   }),
 };
 
+const getShowtime = {
+  params: Joi.object().keys({
+    id: Joi.string().hex().length(24).required(),
+  }),
+  query: Joi.object().keys({
+    populate: Joi.string(),
+  }),
+};
+
 const getShowtimes = {
   query: Joi.object().keys({
+    movie: Joi.string().hex().length(24),
     status: Joi.string().valid(...Object.values(SHOWTIME_STATUS)),
     date: Joi.date(),
     startTime: Joi.date(),
@@ -68,6 +72,7 @@ const getShowtimes = {
 
 module.exports = {
   createShowtime,
+  getShowtime,
   getShowtimes,
   updateShowtime,
   deleteShowtime,

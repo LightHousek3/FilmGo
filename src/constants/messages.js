@@ -50,8 +50,14 @@ const messages = {
     INVALID_TIME_RANGE: "endTime must be greater than startTime",
     MOVIE_SCHEDULE_NOT_CONFIGURED:
       "Movie must have releaseDate and endDate before creating showtimes",
+    MOVIE_DURATION_NOT_CONFIGURED:
+      "Movie must have a valid duration (minutes) before creating showtimes",
     SHOWTIME_OUTSIDE_MOVIE_RANGE:
       "Showtime must be within movie releaseDate and endDate",
+    SHOWTIME_SHORTER_THAN_MOVIE_DURATION: (durationMinutes) =>
+      `Showtime duration must be at least movie duration (${durationMinutes} minutes)`,
+    SHOWTIME_HAS_ACTIVE_BOOKINGS:
+      "Cannot modify or delete showtime because active bookings already exist",
     SHOWTIME_OVERLAP_IN_SCREEN: (bufferMinutes) =>
       `Showtime overlaps with another showtime in the same screen (minimum ${bufferMinutes} minutes gap required)`,
     MOVIE_DATE_RANGE_CANNOT_SHRINK:
