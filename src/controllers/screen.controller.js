@@ -1,98 +1,74 @@
-const Screen = require('../models/screen.model');
+const { screenService } = require('../services');
 
 class ScreenController {
 
     // Create a new screen
     async createScreen(req, res) {
         try {
-            
-            const { name } = req.body;
-
-            // check duplicate name
-            const existing = await Screen.findOne({ name });
-
-            if (existing) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Screen name already exists"
-                });
-            }
-            const screen = new Screen(req.body);
-            const saved = await screen.save();
-
+            const saved = await screenService.createScreen(req.body);
             res.status(201).json({
                 success: true,
                 data: saved
             });
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            const statusCode = error.statusCode || 500;
+            res.status(statusCode).json({ success: false, message: error.message });
         }
     }
 
     // Get list of all screens
     async getScreenList(req, res) {
         try {
-            const screens = await Screen.find();
-
+            const screens = await screenService.getScreenList();
             res.json({
                 success: true,
                 data: screens
             });
-
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            const statusCode = error.statusCode || 500;
+            res.status(statusCode).json({ success: false, message: error.message });
         }
     }
 
     // Get details of a specific screen
     async getScreenDetail(req, res) {
         try {
-            const screen = await Screen.findById(req.params.id);
-
-            if (!screen)
-                return res.status(404).json({ message: "Screen not found" });
-
+            const screen = await screenService.getScreenById(req.params.id);
             res.json({
                 success: true,
                 data: screen
             });
-
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            const statusCode = error.statusCode || 500;
+            res.status(statusCode).json({ success: false, message: error.message });
         }
     }
 
     // Update a screen's information
     async updateScreen(req, res) {
         try {
-            const screen = await Screen.findByIdAndUpdate(
-                req.params.id,
-                req.body,
-                { new: true }
-            );
-
+            const screen = await screenService.updateScreenById(req.params.id, req.body);
             res.json({
                 success: true,
                 data: screen
             });
-
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            const statusCode = error.statusCode || 500;
+            res.status(statusCode).json({ success: false, message: error.message });
         }
     }
 
     // Delete a screen
     async deleteScreen(req, res) {
         try {
-            await Screen.findByIdAndDelete(req.params.id);
-
+            await screenService.deleteScreenById(req.params.id);
             res.json({
                 success: true,
                 message: "Screen deleted"
             });
-
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            const statusCode = error.statusCode || 500;
+            res.status(statusCode).json({ success: false, message: error.message });
         }
     }
 

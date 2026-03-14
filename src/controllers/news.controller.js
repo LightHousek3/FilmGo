@@ -43,6 +43,18 @@ class NewsController {
         try {
             const filter = pick(req.query, ['category', 'author', 'location']);
             const options = pick(req.query, ['sortBy', 'limit', 'page', 'select', 'populate']);
+
+            // Search keyword
+            if (req.query.search) {
+                const searchRegex = req.query.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                filter.$or = [
+                    { title: { $regex: searchRegex, $options: "i" } },
+                    { subTitle: { $regex: searchRegex, $options: "i" } },
+                    { description: { $regex: searchRegex, $options: "i" } },
+                    { content: { $regex: searchRegex, $options: "i" } }
+                ];
+            }
+
             const result = await newsService.getNewsList(filter, options);
 
             return ResponseHandler.paginated(res, {
@@ -51,7 +63,10 @@ class NewsController {
                 meta: result.meta,
             });
         } catch (error) {
-            res.status(500).json({ message: error.message });
+            // Log full error stack to help debugging
+            // eslint-disable-next-line no-console
+            console.error('Error in NewsController.getNewsList:', error.stack || error);
+            return ResponseHandler.error(res, { statusCode: 500, message: 'Failed to fetch news list' });
         }
     }
 

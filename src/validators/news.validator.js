@@ -71,6 +71,7 @@ const getNewsList = {
         category: Joi.string(),
         author: Joi.string(),
         location: Joi.string(),
+        search: Joi.string().allow('').optional(),
         select: Joi.string(),
         populate: Joi.string(),
     }),

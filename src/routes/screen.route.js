@@ -43,6 +43,7 @@ router.put(
     "/:id",
     authenticate,
     authorize(USER_ROLE.ADMIN),
+    validate(screenValidator.screenId),
     validate(screenValidator.updateScreen),
     screenController.updateScreen
 );

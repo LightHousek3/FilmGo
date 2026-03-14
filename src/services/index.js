@@ -12,6 +12,7 @@ const userService = require('./user.service');
 const newsService = require('./news.service');
 const serviceService = require('./service.service');
 const bookingService = require('./booking.service');
+const screenService = require('./screen.service');
 const paymentService = require('./payment.service');
 
 module.exports = {
@@ -29,5 +30,6 @@ module.exports = {
     ticketPriceService,
     serviceService,
     bookingService,
+    screenService,
     paymentService,
 };
