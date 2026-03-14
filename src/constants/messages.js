@@ -50,8 +50,12 @@ const messages = {
     INVALID_TIME_RANGE: "endTime must be greater than startTime",
     MOVIE_SCHEDULE_NOT_CONFIGURED:
       "Movie must have releaseDate and endDate before creating showtimes",
+    MOVIE_DURATION_NOT_CONFIGURED:
+      "Movie must have a valid duration (minutes) before creating showtimes",
     SHOWTIME_OUTSIDE_MOVIE_RANGE:
       "Showtime must be within movie releaseDate and endDate",
+    SHOWTIME_SHORTER_THAN_MOVIE_DURATION: (durationMinutes) =>
+      `Showtime duration must be at least movie duration (${durationMinutes} minutes)`,
     SHOWTIME_OVERLAP_IN_SCREEN: (bufferMinutes) =>
       `Showtime overlaps with another showtime in the same screen (minimum ${bufferMinutes} minutes gap required)`,
     MOVIE_DATE_RANGE_CANNOT_SHRINK:
@@ -67,11 +71,22 @@ const messages = {
 
   // Booking
   BOOKING: {
-    SEAT_UNAVAILABLE: "One or more selected seats are unavailable",
+    SEAT_UNAVAILABLE: "One or more selected seats are unavailable or already booked",
+    SEAT_NOT_IN_SCREEN: "One or more seats do not belong to this showtime's screen",
     SHOWTIME_ENDED: "This showtime has already ended",
+    SHOWTIME_NOT_BOOKABLE: "This showtime is not open for booking",
     BOOKING_SUCCESS: "Booking created successfully",
     BOOKING_CANCELLED: "Booking cancelled successfully",
-    ALREADY_BOOKED: "You already have a booking for this showtime",
+    BOOKING_NOT_FOUND: "Booking not found",
+    ALREADY_BOOKED: "You already have an active booking for this showtime",
+    CANNOT_CANCEL: "Only pending bookings can be cancelled",
+    EXPIRED: "Booking has expired",
+    NOT_OWNER: "You are not authorized to access this booking",
+    TICKET_PRICE_NOT_FOUND:
+      "No ticket price found for this seat type, movie type, and showtime. Please contact support.",
+    SERVICE_NOT_AVAILABLE: "One or more selected services are unavailable",
+    SERVICE_NOT_IN_THEATER: "One or more services do not belong to this showtime's theater",
+    PROMOTION_NOT_APPLICABLE: "The promotional code is not applicable to this booking",
   },
 
   // Payment
@@ -79,6 +94,16 @@ const messages = {
     SUCCESS: "Payment completed successfully",
     FAILED: "Payment failed",
     PENDING: "Payment is pending",
+    NOT_FOUND: "Payment not found",
+    ALREADY_PAID: "This booking has already been paid",
+    BOOKING_EXPIRED: "Booking has expired. Please create a new booking.",
+    INVALID_SIGNATURE: "Invalid payment signature",
+    VNPAY_URL_CREATED: "VNPay payment URL created successfully",
+  },
+
+  // Service
+  SERVICE: {
+    NAME_THEATER_EXISTS: "A service with this name already exists in this theater",
   },
 
   // Theater

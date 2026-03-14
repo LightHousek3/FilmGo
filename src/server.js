@@ -2,6 +2,7 @@ const app = require("./app");
 const config = require("./config");
 const logger = require("./config/logger");
 const connectDB = require("./config/db");
+const { startBookingExpiryJob } = require("./jobs/bookingExpiry.job");
 
 let server;
 
@@ -9,13 +10,16 @@ const startServer = async () => {
   // Connect to MongoDB
   await connectDB();
 
+  // Start background jobs
+  startBookingExpiryJob();
+
   server = app.listen(config.port, () => {
     logger.info(`
     ╔═══════════════════════════════════════════════════╗
     ║   Movie Ticket Booking API                        ║
     ║   Environment: ${config.env.padEnd(24)}           ║
     ║   Port: ${String(config.port).padEnd(33)}         ║
-    ║   API: ${config.apiPrefix.padEnd(32)}           ║
+    ║   API: ${config.apiPrefix.padEnd(30)}             ║
     ╚═══════════════════════════════════════════════════╝
     `);
   });
