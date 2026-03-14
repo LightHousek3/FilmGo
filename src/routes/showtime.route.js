@@ -20,7 +20,7 @@ router.get("/", validate(showtimeValidator.getShowtimes), showtimeController.get
  * @route   GET /api/v1/showtimes/:id
  * @access  Public
  */
-router.get("/:id", showtimeController.getShowtime);
+router.get("/:id", validate(showtimeValidator.getShowtime), showtimeController.getShowtime);
 
 // ═══════════════════════════════════════════════
 // Admin-only routes
