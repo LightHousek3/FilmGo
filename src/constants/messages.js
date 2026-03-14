@@ -56,6 +56,8 @@ const messages = {
       "Showtime must be within movie releaseDate and endDate",
     SHOWTIME_SHORTER_THAN_MOVIE_DURATION: (durationMinutes) =>
       `Showtime duration must be at least movie duration (${durationMinutes} minutes)`,
+    SHOWTIME_HAS_ACTIVE_BOOKINGS:
+      "Cannot modify or delete showtime because active bookings already exist",
     SHOWTIME_OVERLAP_IN_SCREEN: (bufferMinutes) =>
       `Showtime overlaps with another showtime in the same screen (minimum ${bufferMinutes} minutes gap required)`,
     MOVIE_DATE_RANGE_CANNOT_SHRINK:
