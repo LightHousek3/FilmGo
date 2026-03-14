@@ -11,7 +11,7 @@ const createShowtime = asyncHandler(async (req, res) => {
 });
 
 const getShowtimes = asyncHandler(async (req, res) => {
-  const filter = pick(req.query, ["status", "date", "startTime", "endTime", "location"]);
+  const filter = pick(req.query, ["movie", "status", "date", "startTime", "endTime", "location"]);
   const options = pick(req.query, ["sortBy", "limit", "page", "populate"]);
   const result = await showtimeService.getShowtimes(filter, options);
 
@@ -23,7 +23,8 @@ const getShowtimes = asyncHandler(async (req, res) => {
 });
 
 const getShowtime = asyncHandler(async (req, res) => {
-  const showtime = await showtimeService.getShowtimeById(req.params.id);
+  const options = pick(req.query, ["populate"]);
+  const showtime = await showtimeService.getShowtimeById(req.params.id, options);
   ResponseHandler.success(res, {
     message: messages.CRUD.FETCHED("Showtime"),
     data: showtime,

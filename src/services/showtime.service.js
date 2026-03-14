@@ -1,10 +1,41 @@
 const { Showtime, Movie, Screen } = require("../models");
 const { ApiError } = require("../utils");
-const { messages, SHOWTIME_BUFFER_MINUTES } = require("../constants");
+const { messages, SHOWTIME_BUFFER_MINUTES, SHOWTIME_STATUS } = require("../constants");
 
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const getObjectIdValue = (value) => (value && value._id ? value._id : value);
+
+const appendAndCondition = (filter, condition) => {
+  if (!filter.$and) {
+    filter.$and = [];
+  }
+
+  filter.$and.push(condition);
+};
+
+const applyStatusFilter = (filter, status, now) => {
+  if (!status) {
+    return;
+  }
+
+  if (status === SHOWTIME_STATUS.UPCOMING) {
+    appendAndCondition(filter, { startTime: { $gt: now } });
+    return;
+  }
+
+  if (status === SHOWTIME_STATUS.NOW_SHOWING) {
+    appendAndCondition(filter, {
+      startTime: { $lte: now },
+      endTime: { $gt: now },
+    });
+    return;
+  }
+
+  if (status === SHOWTIME_STATUS.ENDED) {
+    appendAndCondition(filter, { endTime: { $lte: now } });
+  }
+};
 
 const ensureValidTimeRange = ({ startTime, endTime }) => {
   const normalizedStart = new Date(startTime);
@@ -28,6 +59,20 @@ const ensureShowtimeInMovieWindow = ({ movieDoc, startTime, endTime }) => {
   // Inclusive boundaries: showtime is valid when it does not exceed movie window.
   if (startTime < movieStart || endTime > movieEnd) {
     throw ApiError.badRequest(messages.VALIDATION.SHOWTIME_OUTSIDE_MOVIE_RANGE);
+  }
+};
+
+const ensureShowtimeDurationMatchesMovie = ({ movieDoc, startTime, endTime }) => {
+  const movieDurationMinutes = Number(movieDoc?.duration);
+  if (!Number.isFinite(movieDurationMinutes) || movieDurationMinutes <= 0) {
+    throw ApiError.badRequest(messages.VALIDATION.MOVIE_DURATION_NOT_CONFIGURED);
+  }
+
+  const showtimeDurationMinutes = (endTime.getTime() - startTime.getTime()) / (60 * 1000);
+  if (showtimeDurationMinutes < movieDurationMinutes) {
+    throw ApiError.badRequest(
+      messages.VALIDATION.SHOWTIME_SHORTER_THAN_MOVIE_DURATION(movieDurationMinutes),
+    );
   }
 };
 
@@ -95,6 +140,12 @@ const createShowtime = async (body) => {
     endTime: normalizedEnd,
   });
 
+  ensureShowtimeDurationMatchesMovie({
+    movieDoc,
+    startTime: normalizedStart,
+    endTime: normalizedEnd,
+  });
+
   await ensureNoOverlappingShowtimeInScreen({
     screen: body.screen,
     startTime: normalizedStart,
@@ -118,9 +169,14 @@ const getShowtimes = async (filter, options) => {
   const normalizedOptions = { ...options };
   const location = normalizedFilter.location;
   const date = normalizedFilter.date;
+  const status = normalizedFilter.status;
+  const now = new Date();
 
   delete normalizedFilter.location;
   delete normalizedFilter.date;
+  delete normalizedFilter.status;
+
+  applyStatusFilter(normalizedFilter, status, now);
 
   const populateFields = normalizedOptions.populate
     ? normalizedOptions.populate.split(",").map((field) => field.trim())
@@ -255,6 +311,25 @@ const getShowtimes = async (filter, options) => {
 
   aggregationPipeline.push(
     {
+      $addFields: {
+        status: {
+          $switch: {
+            branches: [
+              {
+                case: { $lte: ["$endTime", now] },
+                then: SHOWTIME_STATUS.ENDED,
+              },
+              {
+                case: { $gt: ["$startTime", now] },
+                then: SHOWTIME_STATUS.UPCOMING,
+              },
+            ],
+            default: SHOWTIME_STATUS.NOW_SHOWING,
+          },
+        },
+      },
+    },
+    {
       $project: {
         _id: 1,
         status: 1,
@@ -302,16 +377,41 @@ const getShowtimes = async (filter, options) => {
   };
 };
 
-const getShowtimeById = async (id) => {
-  const showtime = await Showtime.findById(id)
-    .populate({
+const getShowtimeById = async (id, options = {}) => {
+  const populateFields = options.populate
+    ? options.populate.split(",").map((field) => field.trim())
+    : [];
+  const shouldPopulateMovie =
+    populateFields.includes("movie") || populateFields.includes("movie.genres");
+  const shouldPopulateMovieGenres = populateFields.includes("movie.genres");
+  const shouldPopulateScreen =
+    populateFields.includes("screen") || populateFields.includes("screen.theater");
+  const shouldPopulateScreenTheater = populateFields.includes("screen.theater");
+
+  let query = Showtime.findById(id);
+
+  if (shouldPopulateMovie) {
+    query = query.populate({
       path: "movie",
-      populate: {
-        path: "genres",
-        select: "name",
-      },
-    })
-    .populate("screen");
+      ...(shouldPopulateMovieGenres
+        ? {
+          populate: {
+            path: "genres",
+            select: "name",
+          },
+        }
+        : {}),
+    });
+  }
+
+  if (shouldPopulateScreen) {
+    query = query.populate({
+      path: "screen",
+      ...(shouldPopulateScreenTheater ? { populate: { path: "theater" } } : {}),
+    });
+  }
+
+  const showtime = await query;
   if (!showtime) {
     throw ApiError.notFound(messages.CRUD.NOT_FOUND("Showtime"));
   }
@@ -326,7 +426,10 @@ const updateShowtimeById = async (id, updateBody) => {
     screen: updateBody.screen,
   });
 
-  const effectiveMovieDoc = movieDoc || showtime.movie;
+  const effectiveMovieDoc = movieDoc || await Movie.findById(showtime.movie);
+  if (!effectiveMovieDoc) {
+    throw ApiError.notFound(messages.CRUD.NOT_FOUND("Movie"));
+  }
   const effectiveScreen = updateBody.screen || showtime.screen;
   const { normalizedStart, normalizedEnd } = ensureValidTimeRange({
     startTime: updateBody.startTime || showtime.startTime,
@@ -334,6 +437,12 @@ const updateShowtimeById = async (id, updateBody) => {
   });
 
   ensureShowtimeInMovieWindow({
+    movieDoc: effectiveMovieDoc,
+    startTime: normalizedStart,
+    endTime: normalizedEnd,
+  });
+
+  ensureShowtimeDurationMatchesMovie({
     movieDoc: effectiveMovieDoc,
     startTime: normalizedStart,
     endTime: normalizedEnd,

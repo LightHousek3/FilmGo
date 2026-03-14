@@ -360,6 +360,7 @@ Authorization: Bearer <access_token>
 #### Query Parameters:
 | Parameter | Type | Description | Example |
 |-----------|------|-------------|---------|
+| `movie` | ObjectId | Lọc suất chiếu theo movie ID | `69b40a4d2c78cf2966139101` |
 | `status` | string | Trạng thái (UPCOMING, NOW_SHOWING, ENDED) | `UPCOMING` |
 | `date` | date | Lọc suất chiếu theo ngày (ISO 8601) | `2024-05-04` |
 | `startTime` | date | Thời gian bắt đầu từ (ISO 8601) | `2024-05-04T09:00:00Z` |
@@ -369,6 +370,12 @@ Authorization: Bearer <access_token>
 | `limit` | number | Số bản ghi/trang | `20` |
 | `page` | number | Số trang | `1` |
 | `populate` | string | Populate relation (comma-separated) | `movie,screen` |
+
+#### Notes:
+- `status` là **virtual field** (không lưu cứng trong DB), được tính theo thời gian thực:
+  - `ENDED` khi `endTime <= now`
+  - `UPCOMING` khi `startTime > now`
+  - ngược lại là `NOW_SHOWING`
 
 #### Response: 200 OK
 ```json
@@ -433,6 +440,16 @@ Authorization: Bearer <access_token>
 |-----------|------|----------|-------------|
 | `id` | ObjectId | Yes | ID của suất chiếu (24-char hex string) |
 
+#### Query Parameters:
+| Parameter | Type | Description | Example |
+|-----------|------|-------------|---------|
+| `populate` | string | Populate relation (comma-separated) | `movie,screen` |
+
+#### Populate behavior:
+- Mặc định `GET /showtimes/:id` **không populate** `movie` và `screen`.
+- Chỉ populate khi truyền `populate`.
+- Hỗ trợ: `movie`, `movie.genres`, `screen`, `screen.theater`.
+
 #### Response: 200 OK
 Cấu trúc giống trong List Showtimes response data
 
@@ -455,6 +472,8 @@ Cấu trúc giống trong List Showtimes response data
 - **Suất chiếu trong khung chiếu phim:** `releaseDate ≤ startTime` và `endTime ≤ endDate`
 - **Không trùng thời gian:** Cùng screen không được chồng + buffer 30 phút giữa các suất
 - **Thời gian hợp lệ:** `startTime < endTime`
+- **Thời lượng suất chiếu hợp lệ:** `(endTime - startTime)` phải **≥** `movie.duration` (đơn vị phút)
+- **Duration của movie phải hợp lệ:** movie phải có `duration > 0`
 
 #### Headers:
 ```
@@ -465,7 +484,6 @@ Content-Type: application/json
 #### Request Body:
 ```json
 {
-  "status": "UPCOMING",
   "startTime": "2024-05-04T10:00:00Z",
   "endTime": "2024-05-04T12:23:00Z",
   "movie": "507f1f77bcf86cd799439011",
@@ -480,7 +498,8 @@ Content-Type: application/json
 - `screen` (ObjectId, phải là phòng chiếu hợp lệ)
 
 #### Optional Fields:
-- `status` (UPCOMING, NOW_SHOWING, ENDED, default: UPCOMING)
+- Không có optional field.
+- `status` được tính tự động (virtual), không nhận từ request body.
 
 #### Response: 201 Created
 ```json
@@ -502,7 +521,9 @@ Content-Type: application/json
 | 400 | Movie not found | Movie ID không tồn tại |
 | 400 | Screen not found | Screen ID không tồn tại |
 | 400 | Movie must have releaseDate and endDate | Phim chưa cấu hình thời gian chiếu |
+| 400 | Movie must have a valid duration (minutes) before creating showtimes | Phim chưa cấu hình duration hợp lệ (> 0) |
 | 400 | Showtime must be within movie releaseDate and endDate | Suất nằm ngoài khung chiếu phim |
+| 400 | Showtime duration must be at least movie duration (X minutes) | Thời lượng suất chiếu ngắn hơn duration của phim |
 | 409 | Showtime overlaps with another showtime | Chồng lấn với suất khác (< 30 phút) |
 | 409 | Showtime already exists | Suất chiếu này đã tồn tại |
 | 401 | Unauthorized | Chưa authenticate |
@@ -520,6 +541,7 @@ Content-Type: application/json
 #### Business Logic:
 - Cùng các ràng buộc như Create Showtime
 - Nếu cập nhật cả `startTime` và `endTime`, bắt buộc `startTime < endTime`
+- Luôn kiểm tra `(endTime - startTime) ≥ movie.duration` sau cập nhật (kể cả khi đổi `movie` hoặc chỉ đổi thời gian)
 - Exclude chính nó khi check overlap
 
 #### Headers:
@@ -536,7 +558,6 @@ Content-Type: application/json
 #### Request Body:
 ```json
 {
-  "status": "NOW_SHOWING",
   "startTime": "2024-05-04T10:30:00Z",
   "endTime": "2024-05-04T13:00:00Z"
 }
@@ -545,6 +566,7 @@ Content-Type: application/json
 #### Notes:
 - Tất cả fields là optional, ít nhất phải cập nhật 1 field
 - Các fields không gửi sẽ giữ nguyên giá trị cũ
+- `status` không được phép cập nhật trực tiếp, hệ thống tự tính theo thời gian
 
 #### Response: 200 OK
 ```json
@@ -608,10 +630,12 @@ Authorization: Bearer <access_token>
 ### Showtime Rules
 1. **Thời gian suất chiếu hợp lệ**: `startTime < endTime`
 2. **Nằm trong khung chiếu phim**: `movie.releaseDate ≤ startTime` và `endTime ≤ movie.endDate`
-3. **Không chồng lấn**: Cùng screen không được overlap, phải cách nhau ≥ 30 phút (configurable)
-4. **Screen hợp lệ**: Screen phải tồn tại trong database
-5. **Movie hợp lệ**: Movie phải tồn tại trong database và phải có `releaseDate`, `endDate`
-6. **Soft delete**: Xóa suất chiếu không xóa vĩnh viễn
+3. **Thời lượng suất chiếu không ngắn hơn phim**: `(endTime - startTime) ≥ movie.duration` (phút)
+4. **Không chồng lấn**: Cùng screen không được overlap, phải cách nhau ≥ 30 phút (configurable)
+5. **Screen hợp lệ**: Screen phải tồn tại trong database
+6. **Movie hợp lệ**: Movie phải tồn tại trong database và phải có `releaseDate`, `endDate`, `duration > 0`
+7. **Soft delete**: Xóa suất chiếu không xóa vĩnh viễn
+8. **Status virtual**: `status` không lưu trong DB, luôn tính động theo `startTime/endTime`
 
 ### Configuration
 ```javascript
@@ -755,9 +779,18 @@ curl -X POST http://localhost:3000/api/v1/showtimes \
     "startTime": "2024-05-04T10:00:00Z",
     "endTime": "2024-05-04T12:23:00Z",
     "movie": "507f1f77bcf86cd799439011",
-    "screen": "507f1f77bcf86cd799439015",
-    "status": "UPCOMING"
+    "screen": "507f1f77bcf86cd799439015"
   }'
+```
+
+### List Showtimes By Movie Example
+```bash
+curl "http://localhost:3000/api/v1/showtimes?movie=69b40a4d2c78cf2966139101&status=UPCOMING"
+```
+
+### Get Showtime Detail With Populate Example
+```bash
+curl "http://localhost:3000/api/v1/showtimes/507f1f77bcf86cd799439014?populate=movie.genres,screen.theater"
 ```
 
 ### Get Now-Showing Movies
