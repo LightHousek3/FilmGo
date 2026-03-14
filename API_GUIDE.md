@@ -542,6 +542,7 @@ Content-Type: application/json
 - Cùng các ràng buộc như Create Showtime
 - Nếu cập nhật cả `startTime` và `endTime`, bắt buộc `startTime < endTime`
 - Luôn kiểm tra `(endTime - startTime) ≥ movie.duration` sau cập nhật (kể cả khi đổi `movie` hoặc chỉ đổi thời gian)
+- Không cho phép cập nhật nếu showtime đã có booking ở trạng thái `PENDING` hoặc `CONFIRMED`
 - Exclude chính nó khi check overlap
 
 #### Headers:
@@ -582,6 +583,7 @@ Giống Create Showtime + thêm:
 | Status | Error | Description |
 |--------|-------|-------------|
 | 404 | Showtime not found | ID không tồn tại |
+| 409 | Cannot modify or delete showtime because active bookings already exist | Showtime đã có booking active (`PENDING`/`CONFIRMED`) |
 
 ---
 
@@ -591,6 +593,9 @@ Giống Create Showtime + thêm:
 **Method:** `DELETE`  
 **Endpoint:** `/api/v1/showtimes/:id`  
 **Authentication:** Required (Admin)
+
+#### Business Logic:
+- Không cho phép xóa nếu showtime đã có booking ở trạng thái `PENDING` hoặc `CONFIRMED`
 
 #### Headers:
 ```
@@ -614,6 +619,7 @@ Authorization: Bearer <access_token>
 | Status | Error | Description |
 |--------|-------|-------------|
 | 404 | Showtime not found | ID không tồn tại |
+| 409 | Cannot modify or delete showtime because active bookings already exist | Showtime đã có booking active (`PENDING`/`CONFIRMED`) |
 | 401 | Unauthorized | Chưa authenticate |
 | 403 | Forbidden | Không phải Admin |
 
@@ -634,8 +640,9 @@ Authorization: Bearer <access_token>
 4. **Không chồng lấn**: Cùng screen không được overlap, phải cách nhau ≥ 30 phút (configurable)
 5. **Screen hợp lệ**: Screen phải tồn tại trong database
 6. **Movie hợp lệ**: Movie phải tồn tại trong database và phải có `releaseDate`, `endDate`, `duration > 0`
-7. **Soft delete**: Xóa suất chiếu không xóa vĩnh viễn
-8. **Status virtual**: `status` không lưu trong DB, luôn tính động theo `startTime/endTime`
+7. **Không cho chỉnh sửa khi đã có booking active**: Nếu showtime đã có booking `PENDING` hoặc `CONFIRMED` thì không được update/delete
+8. **Soft delete**: Xóa suất chiếu không xóa vĩnh viễn
+9. **Status virtual**: `status` không lưu trong DB, luôn tính động theo `startTime/endTime`
 
 ### Configuration
 ```javascript

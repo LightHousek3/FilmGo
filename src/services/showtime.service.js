@@ -1,6 +1,11 @@
-const { Showtime, Movie, Screen } = require("../models");
+const { Showtime, Movie, Screen, Booking } = require("../models");
 const { ApiError } = require("../utils");
-const { messages, SHOWTIME_BUFFER_MINUTES, SHOWTIME_STATUS } = require("../constants");
+const {
+  messages,
+  SHOWTIME_BUFFER_MINUTES,
+  SHOWTIME_STATUS,
+  BOOKING_STATUS,
+} = require("../constants");
 
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -99,6 +104,19 @@ const ensureNoOverlappingShowtimeInScreen = async ({
   const overlappedShowtime = await Showtime.findOne(overlapQuery);
   if (overlappedShowtime) {
     throw ApiError.conflict(messages.VALIDATION.SHOWTIME_OVERLAP_IN_SCREEN(SHOWTIME_BUFFER_MINUTES));
+  }
+};
+
+const ensureShowtimeHasNoActiveBookings = async (showtimeId) => {
+  const activeBooking = await Booking.findOne({
+    showtime: showtimeId,
+    status: {
+      $in: [BOOKING_STATUS.PENDING, BOOKING_STATUS.CONFIRMED],
+    },
+  }).select("_id");
+
+  if (activeBooking) {
+    throw ApiError.conflict(messages.VALIDATION.SHOWTIME_HAS_ACTIVE_BOOKINGS);
   }
 };
 
@@ -421,6 +439,8 @@ const getShowtimeById = async (id, options = {}) => {
 const updateShowtimeById = async (id, updateBody) => {
   const showtime = await getShowtimeById(id);
 
+  await ensureShowtimeHasNoActiveBookings(showtime._id);
+
   const { movieDoc } = await ensureMovieAndScreenExist({
     movie: updateBody.movie,
     screen: updateBody.screen,
@@ -462,6 +482,9 @@ const updateShowtimeById = async (id, updateBody) => {
 
 const deleteShowtimeById = async (id) => {
   const showtime = await getShowtimeById(id);
+
+  await ensureShowtimeHasNoActiveBookings(showtime._id);
+
   await showtime.softDelete();
   return showtime;
 };
