@@ -43,6 +43,10 @@ const userSchema = new mongoose.Schema(
             match: [/^[0-9]{10,11}$/, 'Please provide a valid phone number'],
             default: null,
         },
+        dateOfBirth: {
+            type: Date,
+            default: null,
+        },
         emailVerificationToken: {
             type: String,
             private: true,
@@ -78,6 +82,8 @@ const userSchema = new mongoose.Schema(
     },
     {
         timestamps: true,
+        toJSON: { virtuals: true },
+        toObject: { virtuals: true },
     }
 );
 
@@ -92,6 +98,26 @@ userSchema.plugin(softDelete);
 // ─── Virtual: fullName ───────────────────────────────────
 userSchema.virtual('fullName').get(function () {
     return `${this.firstName} ${this.lastName}`;
+});
+
+// ─── Age ─────────────────────────────────────────────
+userSchema.virtual('age').get(function () {
+
+    if (!this.dateOfBirth) return null;
+
+    const today = new Date();
+    const birthDate = new Date(this.dateOfBirth);
+
+    let age = today.getFullYear() - birthDate.getFullYear();
+
+    const month = today.getMonth() - birthDate.getMonth();
+
+    if (month < 0 || (month === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+
+    return age;
+
 });
 
 // ─── Static: Check if email is taken ─────────────────────

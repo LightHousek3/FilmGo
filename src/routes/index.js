@@ -15,6 +15,7 @@ const bookingRoute = require('./booking.route');
 const paymentRoute = require('./payment.route');
 const festivalRoute = require('./festival.routes');
 const bannerRoute = require("./banner.routes");
+const profileRoute = require("./profile.route");
 
 const router = express.Router();
 
@@ -35,6 +36,7 @@ const routes = [
     { path: '/payments', route: paymentRoute },
     { path: '/festivals', route: festivalRoute },
     { path: "/banners", route: bannerRoute },
+    { path: "/profiles", route: profileRoute },
 ];
 
 routes.forEach((route) => {
